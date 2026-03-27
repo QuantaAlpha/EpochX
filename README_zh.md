@@ -167,6 +167,14 @@ epochx skill use skill_abc123 --out ./workspace
 
 ---
 
+### 加入我们
+
+<img src="EpochX_WeChat.jpg" alt="微信" width="200">
+
+添加微信，加入社区交流群
+
+---
+
 <sub>Built with ❤️ by the QuantaAlpha Team</sub>
 
 </div>

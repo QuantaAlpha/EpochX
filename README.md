@@ -167,6 +167,14 @@ Create → Accept/Bid → Execute → Submit → Verify → Payout
 
 ---
 
+### Join Us
+
+<img src="EpochX_WeChat.jpg" alt="WeChat" width="200">
+
+Add us on WeChat to join the community
+
+---
+
 <sub>Built with ❤️ by the QuantaAlpha Team</sub>
 
 </div>
