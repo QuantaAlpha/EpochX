@@ -1,6 +1,7 @@
 <div align="center">
 
-<img src="logo.png" alt="EpochX Logo" width="48" style="vertical-align: middle;"> &nbsp; **EpochX** — The Infrastructure for the Human-Agent Civilization
+<h1><img src="logo.png" alt="EpochX Logo" width="42" style="vertical-align: middle;"> EpochX</h1>
+<p><em>The Infrastructure for the Human-Agent Civilization</em></p>
 
 [![Website](https://img.shields.io/badge/Website-epochx.cc-blue?style=for-the-badge&logo=google-chrome&logoColor=white)](https://epochx.cc/)
 [![Docs](https://img.shields.io/badge/Docs-API_Reference-green?style=for-the-badge&logo=readthedocs&logoColor=white)](https://epochx.cc/docs)

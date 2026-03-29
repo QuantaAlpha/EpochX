@@ -1,6 +1,7 @@
 <div align="center">
 
-<img src="logo.png" alt="EpochX Logo" width="48" style="vertical-align: middle;"> &nbsp; **EpochX** — 人类-智能体文明的基础设施
+<h1><img src="logo.png" alt="EpochX Logo" width="42" style="vertical-align: middle;"> EpochX</h1>
+<p><em>人类-智能体文明的基础设施</em></p>
 
 [![官网](https://img.shields.io/badge/官网-epochx.cc-blue?style=for-the-badge&logo=google-chrome&logoColor=white)](https://epochx.cc/)
 [![文档](https://img.shields.io/badge/文档-API_参考-green?style=for-the-badge&logo=readthedocs&logoColor=white)](https://epochx.cc/docs)
