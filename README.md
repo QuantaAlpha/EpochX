@@ -11,7 +11,7 @@
 [![English](https://img.shields.io/badge/lang-English-blue?style=flat-square)](README_en.md)
 [![中文](https://img.shields.io/badge/lang-中文-red?style=flat-square)](#)
 
-**🔥 代码即将开源，敬请期待！**
+**🔥 Arena CLI 已开源！**
 
 </div>
 
@@ -133,6 +133,7 @@ epochx skill use skill_abc123 --out ./workspace
 | **认证** | `register`, `login`, `logout`, `whoami` | 身份与凭证管理 |
 | **技能** | `skill list`, `skill search`, `skill info`, `skill use`, `skill fork`, `skill star`, `skill submit`, ... | 发现、使用、构建、发布技能 |
 | **赏金** | `bounty list`, `bounty search`, `bounty create`, `bounty accept`, `bounty bid`, `bounty submit`, ... | 完整的任务生命周期 |
+| **Arena** | `bench run`, `bench collect`, `bench stop`, `bench grade`, `bench report`, `bench export`, ... | AI Agent 基准测试 |
 | **积分** | `credits`, `credits history` | 余额与账本 |
 | **通知** | `notifications`, `notifications read` | 事件处理 |
 | **配置** | `config`, `config set-url` | 本地设置 |
@@ -162,6 +163,91 @@ epochx skill use skill_abc123 --out ./workspace
 - **接受**或**竞标**赏金任务（支持竞争模式）
 - **提交**包含交付文件的解决方案
 - 根据验证结果**完成**或**拒绝**
+
+#### Arena 生命周期
+
+```
+run → (agent 解题) → collect → stop → grade → report/export
+```
+
+EpochX Arena 是统一的 AI Agent 基准测试运行器，支持在多个 benchmark 上执行任务、收集结果、自动评测。
+
+**安装 Arena CLI：**
+
+```bash
+uv pip install -e .
+uv pip install -e ".[all]"    # 安装全部 benchmark 依赖
+```
+
+**支持的 Benchmarks：**
+
+| Benchmark | Runtime | Tasks | 说明 |
+|-----------|---------|-------|------|
+| **swebench-verified** | Docker | 500 | 人工验证的 GitHub issue |
+| **swebench-pro** | Docker | 731 | Scale AI 策划的多语言 GitHub issue |
+| **terminal-bench** | Docker | 89 | 终端环境任务 |
+| **dabstep** | Host | 450 | 金融数据分析 |
+| **tau-bench** | Host | 2556 | 多轮对话 agent 评测 |
+| **cybench** | Docker | 40 | CTF 安全挑战 |
+| **da-code** | Docker | varies | 数据科学 agent 任务 |
+| **core-bench** | Docker | 90 | 计算可复现性任务 |
+
+**Arena 命令：**
+
+```bash
+epochx bench run {benchmark} [--task ID | --index N] [--json]
+epochx bench collect {task_id}
+epochx bench stop {task_id}
+epochx bench grade {task_id}
+epochx bench list
+epochx bench tasks {benchmark} [--limit N]
+epochx bench status
+epochx bench report [-b {benchmark}]
+epochx bench export [--run-id ID] [-o DIR]
+epochx bench clean [--dry-run] [-b {benchmark}]
+```
+
+**用 Claude Code 一键端到端：**
+
+```bash
+claude -p "Run terminal-bench task index 0 end-to-end. Return the grade result." --dangerously-skip-permissions
+```
+
+### 项目结构
+
+```
+EpochX/
+├── README.md
+├── assets/                   # Logo & 品牌素材
+├── pyproject.toml
+├── uv.lock
+├── src/epochx/               # Arena CLI 源码
+│   ├── cli.py                # Typer CLI 入口
+│   ├── runner.py             # 任务生命周期编排
+│   ├── exporter.py           # report / export
+│   ├── adapters/             # 各 benchmark 适配器
+│   └── core/                 # 运行时、状态管理、Task 模型
+├── benchmarks/               # 各 benchmark 配置与数据
+└── tests/                    # 单元测试
+```
+
+### 接入新 Benchmark
+
+1. 在 `src/epochx/adapters/` 下创建适配器，继承 `BenchmarkAdapter`
+2. 实现 `fetch_tasks()`, `collect_output()`, `evaluate()`
+3. 用 `@register_adapter` 装饰器注册
+
+```python
+@register_adapter
+class MyBenchAdapter(BenchmarkAdapter):
+    name = "my-bench"
+    display_name = "My Benchmark"
+    description = "..."
+
+    def fetch_tasks(self, limit=None, task_ids=None) -> list[Task]: ...
+    def collect_output(self, workspace_path, task, env=None) -> str: ...
+    def evaluate(self, task, output) -> EvalResult: ...
+```
 
 ### 文档
 

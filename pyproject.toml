@@ -1,0 +1,33 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "epochx"
+version = "0.1.0"
+description = "AI Agent Benchmark Runner - run any agent on any benchmark"
+requires-python = ">=3.10"
+dependencies = [
+    "typer>=0.12",
+    "rich>=13.0",
+    "docker>=7.0",
+    "datasets>=4.8.4",
+]
+
+[project.optional-dependencies]
+swebench = ["swebench", "datasets"]
+dabstep = ["datasets", "pandas"]
+terminalbench = ["tomli; python_version < '3.11'"]
+all = ["epochx[swebench,dabstep,terminalbench]"]
+
+[project.scripts]
+epochx = "epochx.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8.0"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/epochx"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
