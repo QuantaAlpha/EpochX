@@ -1,7 +1,7 @@
 # EpochX Bench — Agent Execution Skill
 
 > **给 AI Agent 的完整指南**: 如何用 `epochx bench` CLI 发现、执行、提交和验证 benchmark 任务。
-> 每个 benchmark 有独立指南：[`benchmarks/`](benchmarks/)
+> 每个 benchmark 有独立指南：[`references/`](references/)
 
 ---
 
@@ -419,13 +419,13 @@ rm -rf ~/.epochx/arena ~/.epochx/state.json ~/.epochx/ports.json ~/.epochx/cache
 
 | Benchmark | Runtime | Tasks | Output Type | Guide |
 |-----------|---------|-------|-------------|-------|
-| **dabstep** | Host | 450 | ANSWER_STRING | [`benchmarks/dabstep.md`](benchmarks/dabstep.md) |
-| **swebench-pro** | Docker | 731 | GIT_DIFF | [`benchmarks/swebench-pro.md`](benchmarks/swebench-pro.md) |
-| **swebench-verified** | Docker | 500 | GIT_DIFF | [`benchmarks/swebench-verified.md`](benchmarks/swebench-verified.md) |
-| **terminal-bench** | Docker | 89 | SNAPSHOT_DIFF | [`benchmarks/terminal-bench.md`](benchmarks/terminal-bench.md) |
-| **cybench** | Docker | 40 | ANSWER_STRING | [`benchmarks/cybench.md`](benchmarks/cybench.md) |
-| **da-code** | Docker | varies | FILE_CONTENT | [`benchmarks/da-code.md`](benchmarks/da-code.md) |
-| **core-bench** | Docker | 90 | FILE_CONTENT | [`benchmarks/core-bench.md`](benchmarks/core-bench.md) |
-| **tau-bench** | Host | varies | TRAJECTORY | [`benchmarks/tau-bench.md`](benchmarks/tau-bench.md) |
+| **dabstep** | Host | 450 | ANSWER_STRING | [`references/dabstep.md`](references/dabstep.md) |
+| **swebench-pro** | Docker | 731 | GIT_DIFF | [`references/swebench-pro.md`](references/swebench-pro.md) |
+| **swebench-verified** | Docker | 500 | GIT_DIFF | [`references/swebench-verified.md`](references/swebench-verified.md) |
+| **terminal-bench** | Docker | 89 | SNAPSHOT_DIFF | [`references/terminal-bench.md`](references/terminal-bench.md) |
+| **cybench** | Docker | 40 | ANSWER_STRING | [`references/cybench.md`](references/cybench.md) |
+| **da-code** | Docker | varies | FILE_CONTENT | [`references/da-code.md`](references/da-code.md) |
+| **core-bench** | Docker | 90 | FILE_CONTENT | [`references/core-bench.md`](references/core-bench.md) |
+| **tau-bench** | Host | varies | TRAJECTORY | [`references/tau-bench.md`](references/tau-bench.md) |
 
 Platform integration: [`references/claude-code-integration.md`](references/claude-code-integration.md)

@@ -52,7 +52,7 @@ claude -p "$PROMPT" \
 
 ```bash
 SKILL=$(cat docs/epochx_bench_agent_skill.md)
-BENCH_GUIDE=$(cat docs/benchmarks/swebench-pro.md)
+BENCH_GUIDE=$(cat docs/references/swebench-pro.md)
 PROMPT=$(cat "$WORKSPACE/.epochx/prompt.md")
 
 claude -p "## Skill Guide
