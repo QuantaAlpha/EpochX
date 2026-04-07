@@ -459,6 +459,11 @@ def bench_clean(
 
     images_to_remove: list[dict] = []
 
+    # Build accurate size lookup from client.df() — img.attrs["Size"] is
+    # unreliable on Docker 25+ with the containerd image store.
+    df_images = client.df().get("Images", [])
+    size_by_id = {img["Id"]: img.get("Size", 0) for img in df_images}
+
     for img in client.images.list():
         tags = img.tags
         if not tags:
@@ -466,7 +471,8 @@ def bench_clean(
         tag = tags[0]
         for bname, pattern in patterns.items():
             if pattern in tag:
-                size_mb = img.attrs.get("Size", 0) / (1024 * 1024)
+                size_bytes = size_by_id.get(img.id, img.attrs.get("Size", 0))
+                size_mb = size_bytes / (1024 * 1024)
                 images_to_remove.append({
                     "image": tag,
                     "benchmark": bname,
@@ -623,8 +629,11 @@ def bench_submit_run(
                 body = json.loads(resp.read().decode())
                 results.append({"benchmark": stats.display_name, "status": "ok", "run_id": body.get("run_id"), "pass_rate": body.get("pass_rate")})
         except urllib.error.HTTPError as e:
-            err_body = e.read().decode() if e.fp else str(e)
-            results.append({"benchmark": stats.display_name, "status": "error", "detail": err_body})
+            err_body = e.read().decode() if e.fp else ""
+            detail = f"HTTP {e.code}"
+            if err_body.strip():
+                detail += f": {err_body.strip()}"
+            results.append({"benchmark": stats.display_name, "status": "error", "detail": detail})
         except Exception as e:
             results.append({"benchmark": stats.display_name, "status": "error", "detail": str(e)})
 

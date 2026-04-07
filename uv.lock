@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 2
 requires-python = ">=3.10"
 resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'win32'",
@@ -501,6 +501,7 @@ dependencies = [
     { name = "datasets" },
     { name = "docker" },
     { name = "rich" },
+    { name = "socksio" },
     { name = "typer" },
 ]
 
@@ -510,6 +511,7 @@ all = [
     { name = "pandas", version = "2.3.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "pandas", version = "3.0.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "swebench" },
+    { name = "tomli", marker = "python_full_version < '3.11'" },
 ]
 dabstep = [
     { name = "datasets" },
@@ -519,6 +521,9 @@ dabstep = [
 swebench = [
     { name = "datasets" },
     { name = "swebench" },
+]
+terminalbench = [
+    { name = "tomli", marker = "python_full_version < '3.11'" },
 ]
 
 [package.dev-dependencies]
@@ -532,13 +537,15 @@ requires-dist = [
     { name = "datasets", marker = "extra == 'dabstep'" },
     { name = "datasets", marker = "extra == 'swebench'" },
     { name = "docker", specifier = ">=7.0" },
-    { name = "epochx", extras = ["swebench", "dabstep"], marker = "extra == 'all'" },
+    { name = "epochx", extras = ["swebench", "dabstep", "terminalbench"], marker = "extra == 'all'" },
     { name = "pandas", marker = "extra == 'dabstep'" },
     { name = "rich", specifier = ">=13.0" },
+    { name = "socksio", specifier = ">=1.0.0" },
     { name = "swebench", marker = "extra == 'swebench'" },
+    { name = "tomli", marker = "python_full_version < '3.11' and extra == 'terminalbench'" },
     { name = "typer", specifier = ">=0.12" },
 ]
-provides-extras = ["swebench", "dabstep", "all"]
+provides-extras = ["swebench", "dabstep", "terminalbench", "all"]
 
 [package.metadata.requires-dev]
 dev = [{ name = "pytest", specifier = ">=8.0" }]
@@ -1842,6 +1849,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/1f/ea/49c993d6dfdd7338c9b1000a0f36817ed7ec84577ae2e52f890d1a4ff909/smmap-5.0.3.tar.gz", hash = "sha256:4d9debb8b99007ae47165abc08670bd74cb74b5227dda7f643eccc4e9eb5642c", size = 22506, upload-time = "2026-03-09T03:43:26.1Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c1/d4/59e74daffcb57a07668852eeeb6035af9f32cbfd7a1d2511f17d2fe6a738/smmap-5.0.3-py3-none-any.whl", hash = "sha256:c106e05d5a61449cf6ba9a1e650227ecfb141590d2a98412103ff35d89fc7b2f", size = 24390, upload-time = "2026-03-09T03:43:24.361Z" },
+]
+
+[[package]]
+name = "socksio"
+version = "1.0.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f8/5c/48a7d9495be3d1c651198fd99dbb6ce190e2274d0f28b9051307bdec6b85/socksio-1.0.0.tar.gz", hash = "sha256:f88beb3da5b5c38b9890469de67d0cb0f9d494b78b106ca1845f96c10b91c4ac", size = 19055, upload-time = "2020-04-17T15:50:34.664Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/37/c3/6eeb6034408dac0fa653d126c9204ade96b819c936e136c5e8a6897eee9c/socksio-1.0.0-py3-none-any.whl", hash = "sha256:95dc1f15f9b34e8d7b16f06d74b8ccf48f609af32ab33c608d08761c5dcbb1f3", size = 12763, upload-time = "2020-04-17T15:50:31.878Z" },
 ]
 
 [[package]]

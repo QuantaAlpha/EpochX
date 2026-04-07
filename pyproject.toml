@@ -12,6 +12,7 @@ dependencies = [
     "rich>=13.0",
     "docker>=7.0",
     "datasets>=4.8.4",
+    "socksio>=1.0.0",
 ]
 
 [project.optional-dependencies]

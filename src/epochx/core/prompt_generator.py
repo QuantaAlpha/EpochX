@@ -97,7 +97,7 @@ def generate_prompt(task: Task, ws_info: WorkspaceInfo) -> str:
         f"Run the following command to collect your output:\n"
     )
     sections.append(f"```bash")
-    sections.append(f"epochx bench collect {task.id}")
+    sections.append(f"epochx-bench collect {task.id}")
     sections.append(f"```")
 
     return "\n".join(sections)

@@ -69,7 +69,7 @@ class BenchRunner:
                 "task_id": task.id,
                 "workspace": existing.workspace,
                 "message": f"Task {task.id} is already running.",
-                "next_command": f"epochx bench collect {task.id}",
+                "next_command": f"epochx-bench collect {task.id}",
             }
 
         # Prepare Docker image if needed
@@ -128,7 +128,7 @@ class BenchRunner:
             "benchmark": task.benchmark,
             "workspace": ws_info.path,
             "prompt_file": str(prompt_path),
-            "next_command": f"epochx bench collect {task.id}",
+            "next_command": f"epochx-bench collect {task.id}",
         }
 
     # ------------------------------------------------------------------
@@ -165,7 +165,7 @@ class BenchRunner:
             "output_type": task.output_spec.type.value,
             "content": truncated,
             "saved_to": str(output_path),
-            "next_command": f"epochx bench grade {task_id}",
+            "next_command": f"epochx-bench grade {task_id}",
         }
 
     # ------------------------------------------------------------------
@@ -183,7 +183,7 @@ class BenchRunner:
         if not output_path.exists():
             return {
                 "status": "error",
-                "message": f"No output collected. Run: epochx bench collect {task_id}",
+                "message": f"No output collected. Run: epochx-bench collect {task_id}",
             }
         output = output_path.read_text()
 
@@ -216,7 +216,7 @@ class BenchRunner:
             "score": result.score,
             "details": result.details,
             "result_file": str(result_path),
-            "next_command": f"epochx bench stop {task_id}",
+            "next_command": f"epochx-bench stop {task_id}",
         }
 
     # ------------------------------------------------------------------
@@ -284,7 +284,7 @@ class BenchRunner:
             "task_id": next_task.id,
             "total": len(all_tasks),
             "remaining": len(remaining),
-            "start_command": f"epochx bench run {benchmark_name} --task {next_task.external_id}",
+            "start_command": f"epochx-bench run {benchmark_name} --task {next_task.external_id}",
         }
 
     @staticmethod
