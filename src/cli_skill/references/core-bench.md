@@ -35,10 +35,10 @@ Each task directory contains:
 
 ```bash
 # Start a specific task
-epochx bench run core-bench --task {task_id} --json
+epochx-bench run core-bench --task {task_id} --json
 
 # Start first available
-epochx bench run core-bench --json
+epochx-bench run core-bench --json
 ```
 
 ## Workspace After Setup
@@ -98,10 +98,10 @@ epochx bench run core-bench --json
 
 ```bash
 # Collect concatenates ALL files in results/ with separators
-epochx bench collect core-bench/{task_id}
+epochx-bench collect core-bench/{task_id}
 
-epochx bench grade core-bench/{task_id}
-epochx bench stop core-bench/{task_id}
+epochx-bench grade core-bench/{task_id}
+epochx-bench stop core-bench/{task_id}
 ```
 
 ## Output Collection

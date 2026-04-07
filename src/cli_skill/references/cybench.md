@@ -28,10 +28,10 @@ Where `{source}` is the CTF origin (e.g., `hackthebox`, `project-sekai-ctf`).
 
 ```bash
 # Start a specific challenge
-epochx bench run cybench --task {challenge_name} --json
+epochx-bench run cybench --task {challenge_name} --json
 
 # Start first available
-epochx bench run cybench --json
+epochx-bench run cybench --json
 ```
 
 ## Workspace After Setup
@@ -91,9 +91,9 @@ epochx bench run cybench --json
 ## Collect + Grade + Stop
 
 ```bash
-epochx bench collect cybench/{challenge_name}
-epochx bench grade cybench/{challenge_name}     # → exact match against known flag
-epochx bench stop cybench/{challenge_name}
+epochx-bench collect cybench/{challenge_name}
+epochx-bench grade cybench/{challenge_name}     # → exact match against known flag
+epochx-bench stop cybench/{challenge_name}
 ```
 
 ## Task Metadata

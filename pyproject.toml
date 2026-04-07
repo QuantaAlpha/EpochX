@@ -21,7 +21,7 @@ terminalbench = ["tomli; python_version < '3.11'"]
 all = ["epochx[swebench,dabstep,terminalbench]"]
 
 [project.scripts]
-epochx = "epochx.cli:main"
+epochx-bench = "epochx.cli:main"
 
 [dependency-groups]
 dev = ["pytest>=8.0"]

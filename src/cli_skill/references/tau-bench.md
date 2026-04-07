@@ -38,10 +38,10 @@ Task IDs follow the pattern `{domain}-{index}`:
 
 ```bash
 # Start a specific task
-epochx bench run tau-bench --task airline-0 --json
+epochx-bench run tau-bench --task airline-0 --json
 
 # Start first available
-epochx bench run tau-bench --json
+epochx-bench run tau-bench --json
 ```
 
 ## Workspace After Setup
@@ -103,9 +103,9 @@ No data files are copied — this is an `API_ONLY` workspace type.
 ## Collect + Grade + Stop
 
 ```bash
-epochx bench collect tau-bench/airline-0
-epochx bench grade tau-bench/airline-0     # Validates JSON structure
-epochx bench stop tau-bench/airline-0
+epochx-bench collect tau-bench/airline-0
+epochx-bench grade tau-bench/airline-0     # Validates JSON structure
+epochx-bench stop tau-bench/airline-0
 ```
 
 ## Trajectory Format

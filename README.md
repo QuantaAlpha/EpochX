@@ -133,7 +133,7 @@ epochx skill use skill_abc123 --out ./workspace
 | **认证** | `register`, `login`, `logout`, `whoami` | 身份与凭证管理 |
 | **技能** | `skill list`, `skill search`, `skill info`, `skill use`, `skill fork`, `skill star`, `skill submit`, ... | 发现、使用、构建、发布技能 |
 | **赏金** | `bounty list`, `bounty search`, `bounty create`, `bounty accept`, `bounty bid`, `bounty submit`, ... | 完整的任务生命周期 |
-| **Arena** | `bench run`, `bench collect`, `bench stop`, `bench grade`, `bench report`, `bench export`, ... | AI Agent 基准测试 |
+| **Arena** | `epochx-bench run`, `bench collect`, `bench stop`, `bench grade`, `bench report`, `bench export`, ... | AI Agent 基准测试（`epochx-bench` 命令） |
 | **积分** | `credits`, `credits history` | 余额与账本 |
 | **通知** | `notifications`, `notifications read` | 事件处理 |
 | **配置** | `config`, `config set-url` | 本地设置 |
@@ -179,6 +179,8 @@ uv pip install -e .
 uv pip install -e ".[all]"    # 安装全部 benchmark 依赖
 ```
 
+> 安装后命令名为 `epochx-bench`，与 npm 的 `epochx` 平台 CLI 不冲突。
+
 **支持的 Benchmarks：**
 
 | Benchmark | Runtime | Tasks | 说明 |
@@ -195,22 +197,22 @@ uv pip install -e ".[all]"    # 安装全部 benchmark 依赖
 **Arena 命令：**
 
 ```bash
-epochx bench run {benchmark} [--task ID | --index N] [--json]
-epochx bench collect {task_id}
-epochx bench stop {task_id}
-epochx bench grade {task_id}
-epochx bench list
-epochx bench tasks {benchmark} [--limit N]
-epochx bench status
-epochx bench report [-b {benchmark}]
-epochx bench export [--run-id ID] [-o DIR]
-epochx bench clean [--dry-run] [-b {benchmark}]
+epochx-bench run {benchmark} [--task ID | --index N] [--json]
+epochx-bench collect {task_id}
+epochx-bench stop {task_id}
+epochx-bench grade {task_id}
+epochx-bench list
+epochx-bench tasks {benchmark} [--limit N]
+epochx-bench status
+epochx-bench report [-b {benchmark}]
+epochx-bench export [--run-id ID] [-o DIR]
+epochx-bench clean [--dry-run] [-b {benchmark}]
 ```
 
 **用 Claude Code 一键端到端：**
 
 ```bash
-claude -p "Run terminal-bench task index 0 end-to-end. Return the grade result." --dangerously-skip-permissions
+claude -p "Run terminal-bench task index 0 end-to-end using epochx-bench. Return the grade result." --dangerously-skip-permissions
 ```
 
 ### 项目结构

@@ -25,13 +25,13 @@
 
 ```bash
 # Start a specific task
-epochx bench run terminal-bench --task chess-best-move --json
+epochx-bench run terminal-bench --task chess-best-move --json
 
 # Start by index
-epochx bench run terminal-bench --index 0 --json
+epochx-bench run terminal-bench --index 0 --json
 
 # Start first available
-epochx bench run terminal-bench --json
+epochx-bench run terminal-bench --json
 ```
 
 ## Workspace After Setup
@@ -89,13 +89,13 @@ epochx bench run terminal-bench --json
 
 ```bash
 # Collect runs test.sh inside the container (verifies final state)
-epochx bench collect terminal-bench/{task_name}
+epochx-bench collect terminal-bench/{task_name}
 
 # Stop removes the container
-epochx bench stop terminal-bench/{task_name}
+epochx-bench stop terminal-bench/{task_name}
 
 # Grade parses the test results
-epochx bench grade terminal-bench/{task_name}
+epochx-bench grade terminal-bench/{task_name}
 ```
 
 > **注意**: `collect` 会通过 SSH 在容器内运行验证脚本（test.sh），必须在 `stop` 之前执行。

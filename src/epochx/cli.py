@@ -13,9 +13,7 @@ from rich.table import Table
 from epochx.adapters import get_adapter, list_adapters
 from epochx.runner import BenchRunner
 
-app = typer.Typer(name="epochx", help="EpochX - AI Agent Benchmark Runner")
-bench_app = typer.Typer(name="bench", help="Benchmark operations")
-app.add_typer(bench_app)
+app = typer.Typer(name="epochx-bench", help="EpochX - AI Agent Benchmark Runner")
 
 console = Console()
 
@@ -43,7 +41,7 @@ def _output(data: dict, as_json: bool) -> None:
 # bench list
 # ------------------------------------------------------------------
 
-@bench_app.command("list")
+@app.command("list")
 def bench_list(
     json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
 ) -> None:
@@ -75,7 +73,7 @@ def bench_list(
 # bench info
 # ------------------------------------------------------------------
 
-@bench_app.command("info")
+@app.command("info")
 def bench_info(
     benchmark: str = typer.Argument(help="Benchmark name"),
     json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
@@ -95,7 +93,7 @@ def bench_info(
 # bench run
 # ------------------------------------------------------------------
 
-@bench_app.command("run")
+@app.command("run")
 def bench_run(
     benchmark: str = typer.Argument(help="Benchmark name"),
     task: Optional[str] = typer.Option(None, "--task", help="Task ID"),
@@ -122,7 +120,7 @@ def bench_run(
 # bench collect
 # ------------------------------------------------------------------
 
-@bench_app.command("collect")
+@app.command("collect")
 def bench_collect(
     task_id: str = typer.Argument(help="Task ID"),
     json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
@@ -142,7 +140,7 @@ def bench_collect(
 # bench grade
 # ------------------------------------------------------------------
 
-@bench_app.command("grade")
+@app.command("grade")
 def bench_grade(
     task_id: str = typer.Argument(help="Task ID"),
     json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
@@ -162,7 +160,7 @@ def bench_grade(
 # bench stop
 # ------------------------------------------------------------------
 
-@bench_app.command("stop")
+@app.command("stop")
 def bench_stop(
     task_id: str = typer.Argument(help="Task ID"),
     json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
@@ -182,7 +180,7 @@ def bench_stop(
 # bench next
 # ------------------------------------------------------------------
 
-@bench_app.command("next")
+@app.command("next")
 def bench_next(
     benchmark: str = typer.Argument(help="Benchmark name"),
     json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
@@ -197,7 +195,7 @@ def bench_next(
 # bench status
 # ------------------------------------------------------------------
 
-@bench_app.command("status")
+@app.command("status")
 def bench_status(
     json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
 ) -> None:
@@ -238,7 +236,7 @@ def bench_status(
 # bench tasks
 # ------------------------------------------------------------------
 
-@bench_app.command("tasks")
+@app.command("tasks")
 def bench_tasks(
     benchmark: str = typer.Argument(help="Benchmark name"),
     limit: int = typer.Option(20, "--limit", help="Max tasks to show"),
@@ -280,7 +278,7 @@ def bench_tasks(
 # bench report
 # ------------------------------------------------------------------
 
-@bench_app.command("report")
+@app.command("report")
 def bench_report(
     benchmark: Optional[str] = typer.Option(None, "--benchmark", "-b", help="Filter by benchmark"),
     json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
@@ -382,7 +380,7 @@ def bench_report(
 # bench export
 # ------------------------------------------------------------------
 
-@bench_app.command("export")
+@app.command("export")
 def bench_export(
     benchmark: Optional[str] = typer.Option(None, "--benchmark", "-b", help="Filter by benchmark"),
     run_id: Optional[str] = typer.Option(None, "--run-id", help="Custom run ID"),
@@ -429,7 +427,7 @@ def bench_export(
 # bench clean
 # ------------------------------------------------------------------
 
-@bench_app.command("clean")
+@app.command("clean")
 def bench_clean(
     benchmark: Optional[str] = typer.Option(None, "--benchmark", "-b", help="Only clean images for this benchmark"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Show what would be removed without removing"),
@@ -555,7 +553,7 @@ def bench_clean(
 # bench submit-run
 # ------------------------------------------------------------------
 
-@bench_app.command("submit-run")
+@app.command("submit-run")
 def bench_submit_run(
     benchmark: Optional[str] = typer.Option(None, "--benchmark", "-b", help="Benchmark name (default: all)"),
     api_key: Optional[str] = typer.Option(None, "--api-key", help="EpochX API key (default: from config)"),

@@ -28,10 +28,10 @@ Each JSON file may contain a single object or a list of task objects.
 
 ```bash
 # Start a specific task
-epochx bench run da-code --task {task_id} --json
+epochx-bench run da-code --task {task_id} --json
 
 # Start first available
-epochx bench run da-code --json
+epochx-bench run da-code --json
 ```
 
 ## Workspace After Setup
@@ -86,9 +86,9 @@ epochx bench run da-code --json
 ## Collect + Grade + Stop
 
 ```bash
-epochx bench collect da-code/{task_id}
-epochx bench grade da-code/{task_id}
-epochx bench stop da-code/{task_id}
+epochx-bench collect da-code/{task_id}
+epochx-bench grade da-code/{task_id}
+epochx-bench stop da-code/{task_id}
 ```
 
 ## Task Categories

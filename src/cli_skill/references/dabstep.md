@@ -31,10 +31,10 @@ benchmarks/dabstep/repo/data/context/
 
 ```bash
 # Start a task
-epochx bench run dabstep --task 5 --json
+epochx-bench run dabstep --task 5 --json
 
 # Or start first available
-epochx bench run dabstep --json
+epochx-bench run dabstep --json
 ```
 
 ## Workspace After Setup
@@ -81,9 +81,9 @@ epochx bench run dabstep --json
 ## Collect + Grade + Stop
 
 ```bash
-epochx bench collect dabstep/5
-epochx bench grade dabstep/5       # → {"passed": true/false, "score": 1.0/0.0}
-epochx bench stop dabstep/5
+epochx-bench collect dabstep/5
+epochx-bench grade dabstep/5       # → {"passed": true/false, "score": 1.0/0.0}
+epochx-bench stop dabstep/5
 ```
 
 ## Task Metadata

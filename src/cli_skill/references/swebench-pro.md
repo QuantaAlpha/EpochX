@@ -26,10 +26,10 @@
 
 ```bash
 # Start a specific task (image is pulled automatically, may take a few minutes)
-epochx bench run swebench-pro --task django__django-16379 --json
+epochx-bench run swebench-pro --task django__django-16379 --json
 
 # Start first available
-epochx bench run swebench-pro --json
+epochx-bench run swebench-pro --json
 ```
 
 ## Workspace After Setup
@@ -101,13 +101,13 @@ epochx bench run swebench-pro --json
 
 ```bash
 # Collect captures `git diff {base_commit}` from inside the container
-epochx bench collect swebench-pro/django__django-16379
+epochx-bench collect swebench-pro/django__django-16379
 
 # Stop removes the agent's container (释放资源)
-epochx bench stop swebench-pro/django__django-16379
+epochx-bench stop swebench-pro/django__django-16379
 
 # Grade launches a fresh container, applies patch, runs test suite
-epochx bench grade swebench-pro/django__django-16379
+epochx-bench grade swebench-pro/django__django-16379
 ```
 
 > **注意顺序**: 先 `collect`（从 agent 容器取 diff）→ 再 `stop`（关 agent 容器）→ 最后 `grade`（启动评测专用容器）。

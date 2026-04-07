@@ -28,10 +28,10 @@
 uv pip install -e ".[swebench]"
 
 # Start a specific task (image is pulled automatically)
-epochx bench run swebench-verified --task django__django-10097 --json
+epochx-bench run swebench-verified --task django__django-10097 --json
 
 # Start first available
-epochx bench run swebench-verified --json
+epochx-bench run swebench-verified --json
 ```
 
 ## Workspace After Setup
@@ -89,13 +89,13 @@ epochx bench run swebench-verified --json
 
 ```bash
 # Collect captures `git diff {base_commit}` from inside the container
-epochx bench collect swebench-verified/{instance_id}
+epochx-bench collect swebench-verified/{instance_id}
 
 # Stop removes the agent's container
-epochx bench stop swebench-verified/{instance_id}
+epochx-bench stop swebench-verified/{instance_id}
 
 # Grade launches the standard swebench harness (fresh container, apply patch, run tests)
-epochx bench grade swebench-verified/{instance_id}
+epochx-bench grade swebench-verified/{instance_id}
 ```
 
 > **注意顺序**: 先 `collect`（从 agent 容器取 diff）→ 再 `stop`（关 agent 容器）→ 最后 `grade`（swebench harness 启动评测容器）。
