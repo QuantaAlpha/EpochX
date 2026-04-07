@@ -178,18 +178,46 @@ class SWEBenchVerifiedAdapter(BenchmarkAdapter):
                 f"Manual: docker pull {image}"
             )
 
+    def _find_diff_base(self, base_commit: str, env, workdir: str) -> str:
+        """Find the SWE-bench setup commit to use as diff base.
+
+        SWE-bench images contain a setup commit (author "SWE-bench") on top of
+        base_commit that modifies build configs (e.g. pinning setuptools).
+        Diffing from base_commit would include those changes, causing patch
+        apply failures during evaluation.  Use the setup commit instead.
+        """
+        if not base_commit:
+            return ""
+        if env and env.ssh_host:
+            find_cmd = (
+                f"cd {workdir} && "
+                f"git log --format='%H' --author='SWE-bench' "
+                f"--reverse {base_commit}..HEAD 2>/dev/null | head -1"
+            )
+            result = subprocess.run(
+                ["ssh", env.ssh_host, find_cmd],
+                capture_output=True, text=True, timeout=30,
+            )
+            setup_commit = result.stdout.strip()
+            if setup_commit:
+                return setup_commit
+        return base_commit
+
     def collect_output(self, workspace_path: str, task: Task, env=None) -> str:
         """Collect git diff from the container via SSH.
 
-        Captures all changes: unstaged, staged, and committed since base_commit.
+        Uses the SWE-bench setup commit (if present) as the diff base to avoid
+        including environment setup changes in the patch.
+        Falls back to base_commit if no setup commit is found.
         """
         base_commit = task.metadata.get("base_commit", "")
 
         if env and env.ssh_host:
             workdir = env.container_workdir or "/testbed"
+            diff_base = self._find_diff_base(base_commit, env, workdir)
             diff_cmd = (
-                f"cd {workdir} && git diff {base_commit}"
-                if base_commit
+                f"cd {workdir} && git diff {diff_base}"
+                if diff_base
                 else f"cd {workdir} && git diff"
             )
             result = subprocess.run(
@@ -197,9 +225,9 @@ class SWEBenchVerifiedAdapter(BenchmarkAdapter):
                 capture_output=True, text=True, timeout=60,
             )
             diff = result.stdout
-            if not diff.strip() and base_commit:
+            if not diff.strip() and diff_base:
                 result = subprocess.run(
-                    ["ssh", env.ssh_host, f"cd {workdir} && git diff {base_commit}..HEAD"],
+                    ["ssh", env.ssh_host, f"cd {workdir} && git diff {diff_base}..HEAD"],
                     capture_output=True, text=True, timeout=60,
                 )
                 diff = result.stdout
