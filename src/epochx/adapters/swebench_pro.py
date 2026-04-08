@@ -200,6 +200,8 @@ class SWEBenchProAdapter(BenchmarkAdapter):
         base_commit that modifies build configs (e.g. pinning setuptools).
         Diffing from base_commit would include those changes, causing patch
         apply failures during evaluation.  Use the setup commit instead.
+
+        See also: https://github.com/SWE-agent/SWE-agent/issues/810
         """
         if not base_commit:
             return ""
