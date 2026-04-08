@@ -175,6 +175,30 @@ mkdir -p /root/.ssh && chmod 700 /root/.ssh
 echo "{pubkey}" >> /root/.ssh/authorized_keys
 chmod 600 /root/.ssh/authorized_keys
 /usr/sbin/sshd 2>/dev/null || true
+
+# ── Trajectory: auto-log ALL bash commands (interactive + non-interactive) ──
+# Uses DEBUG trap which fires for every command in every bash session,
+# including non-interactive 'ssh host "cmd"' invocations by agents.
+cat > /etc/bash.epochx_log << 'LOGEOF'
+_epochx_trap() {{
+    local cmd="$BASH_COMMAND"
+    case "$cmd" in _epochx_trap*|true|false|"") return;; esac
+    [ -d "/.epochx" ] && printf '{{"ts":"%s","cmd":"%s"}}\\n' \
+        "$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo unknown)" \
+        "$(echo "$cmd" | head -c 2000 | sed 's/\\\\/\\\\\\\\/g; s/"/\\\\"/g' | tr '\\n' ' ')" \
+        >> /.epochx/ssh_log.jsonl 2>/dev/null
+}}
+trap '_epochx_trap' DEBUG
+LOGEOF
+# Inject into ALL bash startup paths so non-interactive SSH also picks it up
+for f in /etc/bash.bashrc /root/.bashrc; do
+    grep -q 'epochx_log' "$f" 2>/dev/null || echo '. /etc/bash.epochx_log' >> "$f" 2>/dev/null
+done
+# Set BASH_ENV in sshd so non-interactive 'ssh host "cmd"' also sources it
+# This is the critical line — without it, non-interactive SSH won't log commands.
+echo 'SetEnv BASH_ENV=/etc/bash.epochx_log' >> /etc/ssh/sshd_config 2>/dev/null || true
+# Restart sshd to pick up the new config
+pkill sshd 2>/dev/null; /usr/sbin/sshd 2>/dev/null || true
 """
         container.exec_run(["bash", "-c", setup_script])
 

@@ -91,6 +91,19 @@ def generate_prompt(task: Task, ws_info: WorkspaceInfo) -> str:
         )
     sections.append("")
 
+    # Trajectory
+    sections.append("## Trajectory (optional)\n")
+    sections.append(
+        "Your SSH commands are logged automatically. "
+        "For richer trajectory data (reasoning, tool choices), "
+        "append JSONL to `/.epochx/trajectory.jsonl` inside the container:\n"
+    )
+    sections.append("```json")
+    sections.append('{"step":1,"type":"thought","content":"analyzing the issue..."}')
+    sections.append('{"step":2,"type":"tool_call","tool_name":"grep","tool_input":"grep -r pattern .","tool_output":"..."}')
+    sections.append("```")
+    sections.append("")
+
     # When Done
     sections.append("## When Done\n")
     sections.append(
