@@ -22,11 +22,9 @@ class BenchRunner:
         self,
         state: StateManager | None = None,
         port_manager: PortManager | None = None,
-        base_dir: Path | None = None,
     ):
         self.state = state or StateManager()
         self.port_manager = port_manager or PortManager()
-        self.base_dir = base_dir or (Path.home() / ".epochx" / "arena")
 
     # ------------------------------------------------------------------
     # run_task
@@ -82,9 +80,10 @@ class BenchRunner:
                 return {"status": "error", "message": f"Failed to prepare Docker image: {e}"}
 
         # Create runtime and setup workspace
+        arena_dir = self.state.get_arena_dir()
         runtime = RuntimeFactory.create(
             task.workspace.runtime,
-            base_dir=self.base_dir,
+            base_dir=arena_dir,
             port_manager=self.port_manager,
             docker_image=task.workspace.docker_image or "python:3.11-slim",
         )

@@ -113,12 +113,15 @@ class Exporter:
         self,
         state: StateManager | None = None,
         base_dir: Path | None = None,
-        arena_dir: Path | None = None,
     ):
         self.state = state or StateManager()
         self.base_dir = base_dir or (Path.home() / ".epochx" / "exports")
-        self.arena_dir = arena_dir or (Path.home() / ".epochx" / "arena")
         self.reporter = Reporter(self.state)
+
+    @property
+    def arena_dir(self) -> Path:
+        """Get arena dir from current run."""
+        return self.state.get_arena_dir()
 
     def export(
         self,

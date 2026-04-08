@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import sys
 from typing import Optional
 
 import typer
@@ -281,12 +280,39 @@ def bench_tasks(
 @app.command("report")
 def bench_report(
     benchmark: Optional[str] = typer.Option(None, "--benchmark", "-b", help="Filter by benchmark"),
+    all_runs: bool = typer.Option(False, "--all", help="Show all runs, not just current"),
     json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
 ) -> None:
     """Show aggregated results summary."""
     from epochx.exporter import Reporter
 
-    reporter = Reporter(_get_runner().state)
+    runner = _get_runner()
+
+    if all_runs:
+        runs = runner.state.list_runs()
+        if not runs:
+            console.print("No runs found.")
+            return
+        original_run = runner.state.current_run_name()
+        for r in runs:
+            runner.state.switch_run(r["run_name"])
+            reporter = Reporter(runner.state)
+            stats_list = reporter.get_stats(benchmark)
+            console.print(f"\n[bold]═══ Run: {r['run_name']} ({r['benchmark']}) ═══[/bold]")
+            if not stats_list:
+                console.print("  No results.")
+                continue
+            for s in stats_list:
+                console.print(
+                    f"  {s.display_name}: {s.passed}/{s.completed} passed "
+                    f"({s.pass_rate:.1%})"
+                )
+        # Restore original run
+        if original_run:
+            runner.state.switch_run(original_run)
+        return
+
+    reporter = Reporter(runner.state)
     stats_list = reporter.get_stats(benchmark)
 
     if not stats_list:
@@ -566,6 +592,8 @@ def bench_submit_run(
     api_url: str = typer.Option("https://epochx.cc", "--api-url", help="EpochX API base URL"),
     agent_model: Optional[str] = typer.Option(None, "--model", help="Agent model name (e.g. claude-sonnet-4-20250514)"),
     agent_version: Optional[str] = typer.Option(None, "--version", "-v", help="Agent version"),
+    run_name: Optional[str] = typer.Option(None, "--name", "-n", help="Run display name"),
+    run: Optional[str] = typer.Option(None, "--run", help="Submit specific run (default: current)"),
     json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
 ) -> None:
     """Submit benchmark results to EpochX Arena."""
@@ -574,6 +602,16 @@ def bench_submit_run(
     from pathlib import Path
 
     from epochx.exporter import Reporter
+
+    runner = _get_runner()
+
+    # 0. Switch to specified run if given
+    if run:
+        try:
+            runner.state.switch_run(run)
+        except ValueError as e:
+            console.print(f"[red]Error: {e}[/red]")
+            raise typer.Exit(1)
 
     # 1. Resolve API key
     config_path = Path.home() / ".epochx" / "config.json"
@@ -592,7 +630,7 @@ def bench_submit_run(
         raise typer.Exit(code=1)
 
     # 2. Gather stats from local state
-    reporter = Reporter(_get_runner().state)
+    reporter = Reporter(runner.state)
     stats_list = reporter.get_stats(benchmark)
 
     if not stats_list:
@@ -609,6 +647,17 @@ def bench_submit_run(
 
     results = []
     for stats in stats_list:
+        # Build per-task results from state
+        task_results_data = runner.state.get_results(benchmark=stats.benchmark)
+        task_results_list = []
+        for task_id, result in task_results_data.items():
+            external_id = task_id.split("/", 1)[1] if "/" in task_id else task_id
+            task_results_list.append({
+                "task_id": external_id,
+                "passed": result.get("passed", False),
+                "score": result.get("score", 0.0),
+            })
+
         payload = {
             "benchmark_name": stats.benchmark,
             "total_instances": stats.total_tasks,
@@ -620,6 +669,10 @@ def bench_submit_run(
             payload["agent_model"] = agent_model
         if agent_version:
             payload["agent_version"] = agent_version
+        if run_name:
+            payload["run_name"] = run_name
+        if task_results_list:
+            payload["task_results"] = task_results_list
 
         data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(url, data=data, headers=headers, method="POST")
@@ -652,6 +705,76 @@ def bench_submit_run(
     console.print(f"\n[bold]{ok_count}/{len(results)} submitted.[/bold]")
     if ok_count > 0:
         console.print(f"View leaderboard: {base}/arena")
+
+
+# ------------------------------------------------------------------
+# run-create / run-list / run-switch
+# ------------------------------------------------------------------
+
+
+@app.command("run-create")
+def bench_run_create(
+    benchmark: str = typer.Argument(help="Benchmark name"),
+    name: Optional[str] = typer.Option(None, "--name", "-n", help="Run display name"),
+    json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
+) -> None:
+    """Create a new run and set it as current."""
+    runner = _get_runner()
+    run_name = runner.state.create_run(benchmark, name)
+    data = {"status": "created", "run_name": run_name, "benchmark": benchmark}
+    if json_output:
+        console.print_json(json.dumps(data))
+    else:
+        console.print(f"Created run [bold]{run_name}[/bold] for {benchmark} (set as current)")
+
+
+@app.command("run-list")
+def bench_run_list(
+    json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
+) -> None:
+    """List all local runs."""
+    runner = _get_runner()
+    runs = runner.state.list_runs()
+    if json_output:
+        console.print_json(json.dumps(runs))
+        return
+    if not runs:
+        console.print("No runs found. Create one with: epochx-bench run-create <benchmark>")
+        return
+    table = Table(title="Local Runs")
+    table.add_column("Run Name", style="bold")
+    table.add_column("Benchmark")
+    table.add_column("Tasks", justify="right")
+    table.add_column("Status")
+    for r in runs:
+        marker = " [green]<- current[/green]" if r["is_current"] else ""
+        status = "active" if r["is_current"] else "inactive"
+        table.add_row(
+            r["run_name"],
+            r["benchmark"],
+            f"{r['passed']}/{r['completed']}",
+            f"{status}{marker}",
+        )
+    console.print(table)
+
+
+@app.command("run-switch")
+def bench_run_switch(
+    run_name: str = typer.Argument(help="Run name to switch to"),
+    json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
+) -> None:
+    """Switch the current active run."""
+    runner = _get_runner()
+    try:
+        runner.state.switch_run(run_name)
+    except ValueError as e:
+        console.print(f"[red]Error: {e}[/red]")
+        raise typer.Exit(1)
+    data = {"status": "switched", "run_name": run_name}
+    if json_output:
+        console.print_json(json.dumps(data))
+    else:
+        console.print(f"Switched to run [bold]{run_name}[/bold]")
 
 
 # ------------------------------------------------------------------
