@@ -96,13 +96,18 @@ class Reporter:
         results = self.state.get_results(benchmark=benchmark)
         out = []
         for task_id, r in sorted(results.items()):
-            out.append({
+            item = {
                 "task_id": task_id,
                 "benchmark": r.get("benchmark", ""),
                 "passed": r.get("passed", False),
                 "score": r.get("score", 0.0),
                 "details": r.get("details", {}),
-            })
+            }
+            if r.get("trajectory"):
+                item["trajectory"] = r["trajectory"]
+            if r.get("output"):
+                item["output"] = r["output"]
+            out.append(item)
         return out
 
 

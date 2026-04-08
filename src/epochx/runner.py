@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -154,15 +155,23 @@ class BenchRunner:
         output = adapter.collect_output(env.workspace, task, env=env)
 
         # Write output to .epochx/output.txt
-        output_path = Path(env.workspace) / ".epochx" / "output.txt"
-        output_path.parent.mkdir(parents=True, exist_ok=True)
+        epochx_dir = Path(env.workspace) / ".epochx"
+        epochx_dir.mkdir(parents=True, exist_ok=True)
+        output_path = epochx_dir / "output.txt"
         output_path.write_text(output)
+
+        # Collect trajectory
+        trajectory = self._collect_trajectory(env)
+        if trajectory:
+            (epochx_dir / "trajectory_collected.json").write_text(
+                json.dumps(trajectory, ensure_ascii=False, indent=2)
+            )
 
         # Update status
         self.state.update_status(task_id, TaskStatus.COLLECTING.value)
 
         truncated = output[:500] + ("..." if len(output) > 500 else "")
-        return {
+        result = {
             "status": "collected",
             "task_id": task_id,
             "output_type": task.output_spec.type.value,
@@ -170,6 +179,9 @@ class BenchRunner:
             "saved_to": str(output_path),
             "next_command": f"epochx-bench grade {task_id}",
         }
+        if trajectory:
+            result["trajectory_steps"] = len(trajectory)
+        return result
 
     # ------------------------------------------------------------------
     # grade_task
@@ -202,6 +214,20 @@ class BenchRunner:
         # Save result to task's own .epochx/result.json
         result_dict = asdict(result)
         result_dict["benchmark"] = env.benchmark
+
+        # Attach trajectory if collected
+        traj_path = Path(env.workspace) / ".epochx" / "trajectory_collected.json"
+        if traj_path.exists():
+            try:
+                result_dict["trajectory"] = json.loads(traj_path.read_text())
+            except Exception:
+                pass
+
+        # Attach output
+        output_path_for_result = Path(env.workspace) / ".epochx" / "output.txt"
+        if output_path_for_result.exists():
+            result_dict["output"] = output_path_for_result.read_text()
+
         result_path = Path(env.workspace) / ".epochx" / "result.json"
         result_path.write_text(json.dumps(result_dict, indent=2))
 
@@ -289,6 +315,93 @@ class BenchRunner:
             "remaining": len(remaining),
             "start_command": f"epochx-bench run {benchmark_name} --task {next_task.external_id}",
         }
+
+    def _collect_trajectory(self, env: EnvironmentState) -> list[dict]:
+        """Collect trajectory from multiple sources, merge into one list.
+
+        Sources (in priority order):
+        1. /.epochx/trajectory.jsonl  — agent-written rich trajectory
+        2. /.epochx/ssh_log.jsonl     — auto-recorded SSH commands
+        3. git log inside container    — fallback: extract commits as steps
+        """
+        epochx_dir = Path(env.workspace) / ".epochx"
+        trajectory: list[dict] = []
+
+        # Source 1: agent-written trajectory
+        agent_traj_path = epochx_dir / "trajectory.jsonl"
+        if agent_traj_path.exists():
+            for line in agent_traj_path.read_text().splitlines():
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    trajectory.append(json.loads(line))
+                except json.JSONDecodeError:
+                    continue
+
+        # Source 2: SSH command log (from host-side runtime.exec logging)
+        ssh_log_path = epochx_dir / "ssh_log.jsonl"
+        if ssh_log_path.exists():
+            step = len(trajectory)
+            for line in ssh_log_path.read_text().splitlines():
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    entry = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                step += 1
+                trajectory.append({
+                    "step": step,
+                    "type": "tool_call",
+                    "tool_name": "shell",
+                    "tool_input": entry.get("cmd", ""),
+                    "tool_output": entry.get("output", "")[:500],
+                    "duration_ms": entry.get("ms"),
+                    "content": f"[auto-logged] {entry.get('ts', '')}",
+                    "source": "ssh_log",
+                })
+
+        # Source 3: git log fallback
+        if not trajectory and env.ssh_host:
+            workdir = env.container_workdir or "/testbed"
+            try:
+                result = subprocess.run(
+                    ["ssh", env.ssh_host,
+                     f"cd {workdir} && git log --oneline --reverse --format='%H|%s|%ai' 2>/dev/null | tail -20"],
+                    capture_output=True, text=True, timeout=15,
+                )
+                step = 0
+                for line in result.stdout.strip().splitlines():
+                    parts = line.split("|", 2)
+                    if len(parts) < 2:
+                        continue
+                    step += 1
+                    trajectory.append({
+                        "step": step,
+                        "type": "action",
+                        "tool_name": "git_commit",
+                        "content": parts[1],
+                        "tool_input": parts[0][:12],
+                        "source": "git_log",
+                    })
+                result2 = subprocess.run(
+                    ["ssh", env.ssh_host,
+                     f"cd {workdir} && git diff --stat HEAD~1 HEAD 2>/dev/null || true"],
+                    capture_output=True, text=True, timeout=15,
+                )
+                if result2.stdout.strip() and trajectory:
+                    trajectory.append({
+                        "step": step + 1,
+                        "type": "observation",
+                        "content": f"Changes: {result2.stdout.strip()}",
+                        "source": "git_log",
+                    })
+            except Exception:
+                pass
+
+        return trajectory
 
     @staticmethod
     def _to_external_id(task_id: str, benchmark: str) -> str:

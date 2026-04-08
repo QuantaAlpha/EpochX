@@ -652,11 +652,17 @@ def bench_submit_run(
         task_results_list = []
         for task_id, result in task_results_data.items():
             external_id = task_id.split("/", 1)[1] if "/" in task_id else task_id
-            task_results_list.append({
+            item = {
                 "task_id": external_id,
                 "passed": result.get("passed", False),
                 "score": result.get("score", 0.0),
-            })
+            }
+            # Attach trajectory and output if available
+            if result.get("trajectory"):
+                item["trajectory"] = result["trajectory"]
+            if result.get("output"):
+                item["output"] = result["output"][:5000]
+            task_results_list.append(item)
 
         payload = {
             "benchmark_name": stats.benchmark,
