@@ -23,28 +23,28 @@ def sm(state_dir):
 
 class TestRunManagement:
     def test_create_run(self, sm):
-        sm.create_run("swebench-pro", "my-run")
+        sm.create_run("my-run")
         runs = sm.list_runs()
         assert len(runs) == 1
         assert runs[0]["run_name"] == "my-run"
-        assert runs[0]["benchmark"] == "swebench-pro"
+        assert runs[0]["benchmarks"] == []
 
     def test_create_run_auto_name(self, sm):
-        sm.create_run("swebench-pro")
+        sm.create_run()
         runs = sm.list_runs()
         assert len(runs) == 1
-        assert runs[0]["run_name"].startswith("swebench-pro-")
+        assert runs[0]["run_name"].startswith("run-")
 
     def test_current_run(self, sm):
-        sm.create_run("swebench-pro", "run-1")
+        sm.create_run("run-1")
         assert sm.current_run_name() == "run-1"
 
-        sm.create_run("swebench-pro", "run-2")
+        sm.create_run("run-2")
         assert sm.current_run_name() == "run-2"
 
     def test_switch_run(self, sm):
-        sm.create_run("swebench-pro", "run-1")
-        sm.create_run("swebench-pro", "run-2")
+        sm.create_run("run-1")
+        sm.create_run("run-2")
         sm.switch_run("run-1")
         assert sm.current_run_name() == "run-1"
 
@@ -53,9 +53,23 @@ class TestRunManagement:
             sm.switch_run("nonexistent")
 
     def test_get_arena_dir(self, sm, state_dir):
-        sm.create_run("swebench-pro", "test-run")
+        sm.create_run("test-run")
         arena_dir = sm.get_arena_dir()
         assert arena_dir == state_dir / "runs" / "test-run" / "arena"
+
+    def test_list_runs_shows_benchmarks(self, sm):
+        """Benchmarks are derived from environments and results."""
+        sm.create_run("my-run")
+        env = EnvironmentState(
+            task_id="swebench-pro/task-1",
+            benchmark="swebench-pro",
+            workspace="/tmp/ws",
+            status="running",
+        )
+        sm.save_environment(env)
+        sm.save_result("dabstep/5", {"benchmark": "dabstep", "passed": True, "score": 1.0})
+        runs = sm.list_runs()
+        assert runs[0]["benchmarks"] == ["dabstep", "swebench-pro"]
 
 
 # ── Environment state ──────────────────────────────────────────
@@ -63,7 +77,7 @@ class TestRunManagement:
 
 class TestEnvironments:
     def test_save_and_load_environment(self, sm):
-        sm.create_run("swebench", "test-run")
+        sm.create_run("test-run")
         env = EnvironmentState(
             task_id="swebench/django-123",
             benchmark="swebench",
@@ -84,7 +98,7 @@ class TestEnvironments:
         assert loaded.started_at != ""
 
     def test_list_environments(self, sm):
-        sm.create_run("swebench", "test-run")
+        sm.create_run("test-run")
         env1 = EnvironmentState(
             task_id="task-1", benchmark="swebench", workspace="/tmp/ws1", status="running"
         )
@@ -102,7 +116,7 @@ class TestEnvironments:
         assert running[0].task_id == "task-1"
 
     def test_update_status(self, sm):
-        sm.create_run("swebench", "test-run")
+        sm.create_run("test-run")
         env = EnvironmentState(
             task_id="task-1", benchmark="swebench", workspace="/tmp/ws", status="running"
         )
@@ -113,7 +127,7 @@ class TestEnvironments:
         assert loaded.status == "completed"
 
     def test_remove_environment(self, sm):
-        sm.create_run("swebench", "test-run")
+        sm.create_run("test-run")
         env = EnvironmentState(
             task_id="task-1", benchmark="swebench", workspace="/tmp/ws", status="running"
         )
@@ -122,7 +136,7 @@ class TestEnvironments:
         assert sm.get_environment("task-1") is None
 
     def test_environments_isolated_per_run(self, sm):
-        sm.create_run("swebench-pro", "run-1")
+        sm.create_run("run-1")
         env = EnvironmentState(
             task_id="swebench-pro/task-1",
             benchmark="swebench-pro",
@@ -132,7 +146,7 @@ class TestEnvironments:
         )
         sm.save_environment(env)
 
-        sm.create_run("swebench-pro", "run-2")
+        sm.create_run("run-2")
         # run-2 should not see run-1's environments
         loaded = sm.get_environment("swebench-pro/task-1")
         assert loaded is None
@@ -143,7 +157,7 @@ class TestEnvironments:
 
 class TestResults:
     def test_save_and_get_results(self, sm):
-        sm.create_run("swebench", "test-run")
+        sm.create_run("test-run")
         sm.save_result("task-1", {"benchmark": "swebench", "passed": True, "score": 1.0})
         sm.save_result("task-2", {"benchmark": "dabstep", "passed": False, "score": 0.0})
 
@@ -155,10 +169,10 @@ class TestResults:
         assert "task-1" in swebench_results
 
     def test_results_isolated_per_run(self, sm):
-        sm.create_run("swebench-pro", "run-1")
+        sm.create_run("run-1")
         sm.save_result("swebench-pro/task-1", {"passed": True, "benchmark": "swebench-pro"})
 
-        sm.create_run("swebench-pro", "run-2")
+        sm.create_run("run-2")
         results = sm.get_results("swebench-pro")
         assert len(results) == 0
 

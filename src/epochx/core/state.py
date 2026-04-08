@@ -47,18 +47,17 @@ class StateManager:
 
     # ── Run management ──────────────────────────────────────────
 
-    def create_run(self, benchmark: str, run_name: str | None = None) -> str:
+    def create_run(self, run_name: str | None = None) -> str:
         """Create a new run directory and set it as current."""
         if not run_name:
             ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
-            run_name = f"{benchmark}-{ts}"
+            run_name = f"run-{ts}"
 
         run_dir = self.runs_dir / run_name
         run_dir.mkdir(parents=True, exist_ok=True)
 
         run_data = {
             "run_name": run_name,
-            "benchmark": benchmark,
             "created_at": datetime.now(timezone.utc).isoformat(),
             "environments": {},
             "results": {},
@@ -80,11 +79,20 @@ class StateManager:
             if data is None:
                 continue
             results = data.get("results", {})
+            envs = data.get("environments", {})
             completed = len(results)
             passed = sum(1 for r in results.values() if r.get("passed"))
+            # Derive benchmarks from environments and results
+            benchmarks = set()
+            for e in envs.values():
+                if b := e.get("benchmark"):
+                    benchmarks.add(b)
+            for r in results.values():
+                if b := r.get("benchmark"):
+                    benchmarks.add(b)
             runs.append({
                 "run_name": d.name,
-                "benchmark": data.get("benchmark", ""),
+                "benchmarks": sorted(benchmarks),
                 "completed": completed,
                 "passed": passed,
                 "is_current": d.name == current,
@@ -238,16 +246,8 @@ class StateManager:
         default_dir = self.runs_dir / "default"
         default_dir.mkdir(parents=True, exist_ok=True)
 
-        # Determine benchmark from environments
-        benchmark = ""
-        for env in old_data.get("environments", {}).values():
-            benchmark = env.get("benchmark", "")
-            if benchmark:
-                break
-
         run_data = {
             "run_name": "default",
-            "benchmark": benchmark,
             "created_at": datetime.now(timezone.utc).isoformat(),
             "environments": old_data.get("environments", {}),
             "results": old_data.get("results", {}),

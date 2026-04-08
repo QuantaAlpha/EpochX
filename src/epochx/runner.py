@@ -40,6 +40,10 @@ class BenchRunner:
 
         Resolution order: task_id > task_index > first available task.
         """
+        # Auto-create a run if none exists
+        if self.state.current_run_name() is None:
+            self.state.create_run()
+
         adapter = get_adapter(benchmark_name)
 
         # Resolve which task to run
